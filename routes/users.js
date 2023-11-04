@@ -20,11 +20,7 @@ const registerValidator = [
     .withMessage("Password minimal 8 karakter")
     .matches(/[\W]/)
     .withMessage("Password harus memiliki minimal 1 simbol"),
-  body("dob")
-    .notEmpty()
-    .withMessage("Tanggal lahir wajib diisi")
-    .isISO8601()
-    .withMessage("Format tanggal lahir tidak valid. Gunakan format YYYY-MM-DD."),
+
 ];
 
 
@@ -54,7 +50,7 @@ router.post("/auth/register", registerValidator, (req, res) => {
     });
   }
 
-  const { fullName, email, password, bio, dob } = req.body;
+  const { fullName, email, password } = req.body;
 
   const existingUser = USERS.find((user) => user.email === email);
   if (existingUser) {
@@ -73,8 +69,7 @@ router.post("/auth/register", registerValidator, (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      bio,
-      dob,
+      
     });
 
     return res.status(201).json({
@@ -84,8 +79,6 @@ router.post("/auth/register", registerValidator, (req, res) => {
         id,
         fullName,
         email,
-        bio,
-        dob,
       },
     });
   });
@@ -129,43 +122,5 @@ router.post("/auth/login", loginValidator, (req, res) => {
 });
 
 
-router.get("/", (req, res) => {
-  return res.status(200).json({
-    status: "success",
-    message: "Berhasil mendapatkan list user yang terdaftar",
-    data: USERS.map((user) => ({
-      fullName: user.fullName,
-      email: user.email,
-      bio: user.bio,
-      dob: user.dob,
-    })),
-  });
-});
-
-
-router.get("/:userId", (req, res) => {
-  const userId = parseInt(req.params.userId);
-
-  if (isNaN(userId)) {
-    return res.status(400).json({ message: "Validation Error" });
-  }
-
-  const user = USERS.find((u) => u.id === userId);
-
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  return res.status(200).json({
-    status: "success",
-    message: "Berhasil mendapatkan data user",
-    data: {
-      fullName: user.fullName,
-      email: user.email,
-      bio: user.bio,
-      dob: user.dob,
-    },
-  });
-});
 
 module.exports = router;

@@ -20,7 +20,7 @@ app.post("/auth/register", registerValidator, (req, res) => {
     });
   }
 
-  const { fullName, email, password, bio, dob } = req.body;
+  const { fullName, email, password } = req.body;
 
   const existingUser = USERS.find((user) => user.email === email);
   if (existingUser) {
@@ -39,8 +39,7 @@ app.post("/auth/register", registerValidator, (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      bio,
-      dob,
+  
     });
 
     return res.status(201).json({
@@ -50,8 +49,7 @@ app.post("/auth/register", registerValidator, (req, res) => {
         id,
         fullName,
         email,
-        bio,
-        dob,
+    
       },
     });
   });
@@ -93,47 +91,7 @@ app.post("/auth/login", loginValidator, (req, res) => {
   });
 });
 
-app.get("/users", (req, res) => {
-  if (USERS.length === 0) {
-    return res.status(404).json({ message: "User not found", data: [] });
-  }
 
-  const userData = USERS.map((user) => ({
-    fullName: user.fullName,
-    email: user.email,
-    bio: user.bio,
-    dob: user.dob,
-  }));
-
-  res.status(200).json({
-    message: "Success",
-    data: userData,
-  });
-});
-
-app.get("/users/:userId", (req, res) => {
-  const userId = parseInt(req.params.userId);
-
-  if (isNaN(userId)) {
-    return res.status(400).json({ message: "Validation Error" });
-  }
-
-  const user = USERS.find((u) => u.id === userId);
-
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  return res.status(200).json({
-    message: "Success",
-    data: {
-      fullName: user.fullName,
-      email: user.email,
-      bio: user.bio,
-      dob: user.dob,
-    },
-  });
-});
 
 
 const port = 1945;

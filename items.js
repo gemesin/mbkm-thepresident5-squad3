@@ -6,16 +6,12 @@ const USERS = [
     fullName: "Bayu Setiawan",
     email: "bayu@skyshi.com",
     password: bcrypt.hashSync("Passw0rd!", 10), 
-    bio: "Backend Developer @SkyshiDigitalIndonesia",
-    dob: "1997-06-30",
   },
   {
     id: 2,
-    fullName: "erlinaayu",
-    email: "erlina@gmail.com",
+    fullName: "chillicare",
+    email: "chilli@gmail.com",
     password: bcrypt.hashSync("Passw0rd!", 10), 
-    bio: "Backend Developer @SkyshiDigitalIndonesia",
-    dob: "1997-06-30",
   }
  
 ];
