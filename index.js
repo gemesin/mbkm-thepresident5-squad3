@@ -7,11 +7,22 @@ const secretKey = process.env.JWT_SECRET_KEY;
 const registerValidator = require("./middlewares/register-validator");
 const loginValidator = require("./middlewares/login-validator");
 const { USERS } = require("./items"); 
+const db = require('./models');
+const { userModel } = require('./models');
 
 app.use(express.json());
 
-app.post("/auth/register", registerValidator, (req, res) => {
-  const validateResult = validationResult(req);
+db.sequelize
+    .authenticate()
+    .then(() => {
+        console.log('Koneksi ke database berhasil.');
+    })
+    .catch(err => {
+        console.log('Gagal koneksi ke database: ', err);
+    })
+
+app.post("/auth/register", registerValidator, async (req, res) => {
+  const validateResult = await validationResult(req);
   if (!validateResult.isEmpty()) {
     return res.status(400).json({
       status: "failed",
@@ -22,25 +33,36 @@ app.post("/auth/register", registerValidator, (req, res) => {
 
   const { fullName, email, password } = req.body;
 
-  const existingUser = USERS.find((user) => user.email === email);
+  const existingUser = await userModel.findOne({
+    where: {
+      email: email
+    }
+  })
+
   if (existingUser) {
     return res.status(400).json({ message: "Email sudah terdaftar" });
   }
 
   // Simpan data pengguna dengan password yang dienkripsi
-  const id = USERS.length + 1;
+  const id = await USERS.length + 1;
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({ message: "Internal Server Error" });
     }
 
-    USERS.push({
+     userModel.create({
+      fullName: fullName,
+      email: email,
+      password: hashedPassword
+    });
+
+    /*USERS.push({
       id,
       fullName,
       email,
       password: hashedPassword,
   
-    });
+    }); */
 
     return res.status(201).json({
       status: "success",
@@ -55,8 +77,8 @@ app.post("/auth/register", registerValidator, (req, res) => {
   });
 });
 
-app.post("/auth/login", loginValidator, (req, res) => {
-  const validateResult = validationResult(req);
+app.post("/auth/login", loginValidator, async (req, res) => {
+  const validateResult = await validationResult(req);
   if (!validateResult.isEmpty()) {
     return res.status(400).json({
       status: "failed",
@@ -68,19 +90,24 @@ app.post("/auth/login", loginValidator, (req, res) => {
   const { email, password } = req.body;
 
   // Cari pengguna dengan email yang sesuai
-  const user = USERS.find((user) => user.email === email);
+  const user = await userModel.findOne({
+    where: {
+      email: email
+    }
+  })
   if (!user) {
     return res.status(401).json({ message: "Email tidak ditemukan" });
   }
 
   
-  bcrypt.compare(password, user.password, (err, result) => {
-    if (err || !result) {
-      return res.status(401).json({ message: "Password tidak ditemukan" });
-    }
+  const passwordMatch = await bcrypt.compare(password, user.password);
+
+  if (!passwordMatch) {
+      return res.status(401).json({ message: "Password tidak cocok" });
+  }
 
     const tokenData = { id: user.id, email: user.email };
-    const token = jwt.sign(tokenData, "rahasiaJWT");
+    const token = jwt.sign(tokenData, "rahasia");
 
     return res.status(200).json({
       message: "Success",
@@ -89,7 +116,6 @@ app.post("/auth/login", loginValidator, (req, res) => {
       },
     });
   });
-});
 
 
 
