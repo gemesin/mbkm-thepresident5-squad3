@@ -44,7 +44,7 @@ app.post("/auth/register", registerValidator, async (req, res) => {
   }
 
   // Simpan data pengguna dengan password yang dienkripsi
-  const id = await USERS.length + 1;
+  const id = await USERS.length + 1; //???
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
       return res.status(500).json({ message: "Internal Server Error" });
