@@ -1,8 +1,8 @@
 const dbConfig = {
-    HOST: 'localhost', //127.0.0.1
+    HOST: 'msib-mysql-db', //127.0.0.1
     USER: 'root',
-    PASSWORD: '12345678',
-    DB: 'chilicare',
+    PASSWORD: 'root@msib',
+    DB: 'msib_squad3',
     DIALECT: 'mysql',
     PORT: 3306
 }
