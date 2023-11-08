@@ -7,3 +7,8 @@ services:
     ports:
       - "8003:8003"
     restart: on-failure
+
+networks:
+  default:
+    external:
+      name: mysql_default
