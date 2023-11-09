@@ -21,39 +21,46 @@ db.sequelize
         console.log('Gagal koneksi ke database: ', err);
     })
 
-app.post("/auth/register", registerValidator, async (req, res) => {
-  const validateResult = await validationResult(req);
-  if (!validateResult.isEmpty()) {
-    return res.status(400).json({
-      status: "failed",
-      message: "validation error",
-      error: validateResult.array(),
-    });
-  }
-
-  const { fullName, email, password } = req.body;
-
-  const existingUser = await userModel.findOne({
-    where: {
-      email: email
-    }
-  })
-
-  if (existingUser) {
-    return res.status(400).json({ message: "Email sudah terdaftar" });
-  }
-
-  // Simpan data pengguna dengan password yang dienkripsi
-  const id = await USERS.length + 1; //???
-  bcrypt.hash(password, 10, (err, hashedPassword) => {
-    if (err) {
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-
-     userModel.create({
-      fullName: fullName,
-      email: email,
-      password: hashedPassword
+    app.post("/auth/register", registerValidator, async (req, res) => {
+      const validateResult = await validationResult(req);
+      if (!validateResult.isEmpty()) {
+        return res.status(400).json({
+          status: "failed",
+          message: "validation error",
+          error: validateResult.array(),
+        });
+      }
+    
+      const { fullName, email, password } = req.body;
+    
+      try {
+        const existingUser = await userModel.findOne({
+          where: {
+            email: email
+          }
+        });
+    
+        if (existingUser) {
+          return res.status(400).json({ message: "Email sudah terdaftar" });
+        }
+    
+        const hashedPassword = await bcrypt.hash(password, 10);
+    
+        const createUser = await userModel.create({
+          fullName: fullName,
+          email: email,
+          password: hashedPassword
+        });
+    
+        return res.status(201).json({
+          status: "success",
+          message: "Berhasil register",
+          data: createUser,
+        });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal Server Error" });
+      }
     });
 
     /*USERS.push({
@@ -64,18 +71,6 @@ app.post("/auth/register", registerValidator, async (req, res) => {
   
     }); */
 
-    return res.status(201).json({
-      status: "success",
-      message: "Berhasil register",
-      data: {
-        id,
-        fullName,
-        email,
-    
-      },
-    });
-  });
-});
 
 app.post("/auth/login", loginValidator, async (req, res) => {
   const validateResult = await validationResult(req);
@@ -120,8 +115,8 @@ app.post("/auth/login", loginValidator, async (req, res) => {
 
 
 
-const port = 1945;
+  const port = 8003;
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+  app.listen(port, () =>{
+      console.log(`server starter on port ${port}`)
+  })
