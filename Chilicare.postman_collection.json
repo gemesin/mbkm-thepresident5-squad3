@@ -1,20 +1,19 @@
 {
 	"info": {
-		"_postman_id": "08f8ca73-8c4d-4b69-a138-51e835642492",
-		"name": "Chilicare",
-		"description": "API Contract atau Dokumentasi API Aplikasi ChiliCare Team Cultivate Studi Independen The PRESIDENT",
+		"_postman_id": "8d912564-cf4c-4103-ba40-f4ab62a8babf",
+		"name": "ChiliCare",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "18877515"
+		"_exporter_id": "29457638"
 	},
 	"item": [
 		{
-			"name": "Registrasi",
+			"name": "Register",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"fullName\": \"Winwin\",\r\n  \"email\": \"winwin@gmail.com\",\r\n  \"password\": \"Winwin123!\"\r\n}",
+					"raw": "{\r\n  \"fullName\": \"erlin\",\r\n  \"email\": \"ayutiaraa25@gmail.com\",\r\n  \"password\": \"ayamgoreng!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -35,77 +34,9 @@
 						"auth",
 						"register"
 					]
-				},
-				"description": "## Requirement\n\n- Full Name wajib diisi\n- Email harus wajib diisi dan berformat email, memiliki tanda '@' dan domain seperti 'gmail.com', 'yahoo.com' dll\n- Password wajib diisi, minimal 8 karakter dan terdiri dari 1 simbol"
-			},
-			"response": [
-				{
-					"name": "Response Berhasil",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"fullName\": \"Winwin\",\r\n  \"email\": \"winwin@gmail.com\",\r\n  \"password\": \"Winwin123!\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://195.35.32.179:8003/auth/register",
-							"protocol": "http",
-							"host": [
-								"195",
-								"35",
-								"32",
-								"179"
-							],
-							"port": "8003",
-							"path": [
-								"auth",
-								"register"
-							]
-						}
-					},
-					"status": "Created",
-					"code": 201,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "X-Powered-By",
-							"value": "Express"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json; charset=utf-8"
-						},
-						{
-							"key": "Content-Length",
-							"value": "187"
-						},
-						{
-							"key": "ETag",
-							"value": "W/\"bb-AwR0me1JCtBsdgM1wkuYDEe2iU4\""
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 09 Nov 2023 14:46:21 GMT"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=5"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"status\": \"success\",\n    \"message\": \"Berhasil register\",\n    \"data\": {\n        \"id\": 7,\n        \"fullName\": \"Winwin\",\n        \"email\": \"winwin@gmail.com\",\n        \"password\": \"$2b$10$Ihc4NZWx902c.SHIA550TOZsM/JvrHSlpqzYUGghnHfyfxyS4URPe\"\n    }\n}"
 				}
-			]
+			},
+			"response": []
 		},
 		{
 			"name": "Login",
@@ -114,7 +45,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"email\": \"winwin@gmail.com\",\r\n  \"password\": \"Winwin123!\"\r\n}",
+					"raw": "{\r\n  \"email\": \"ayutiaraa25@gmail.com\",\r\n  \"password\": \"ayamgoreng!\"\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -135,77 +66,67 @@
 						"auth",
 						"login"
 					]
-				},
-				"description": "## Requirement\n\n- Email harus wajib diisi dan berformat email, memiliki tanda '@' dan domain seperti 'gmail.com', 'yahoo.com' dll dan sesuai yang didaftarkan saat registrasi\n    \n- Password wajib diisi, minimal 8 karakter dan terdiri dari 1 simbol dan sesuai yang didaftarkan saat registrasi"
-			},
-			"response": [
-				{
-					"name": "Response Berhasil",
-					"originalRequest": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"winwin@gmail.com\",\r\n  \"password\": \"Winwin123!\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://195.35.32.179:8003/auth/login",
-							"protocol": "http",
-							"host": [
-								"195",
-								"35",
-								"32",
-								"179"
-							],
-							"port": "8003",
-							"path": [
-								"auth",
-								"login"
-							]
-						}
-					},
-					"status": "OK",
-					"code": 200,
-					"_postman_previewlanguage": "json",
-					"header": [
-						{
-							"key": "X-Powered-By",
-							"value": "Express"
-						},
-						{
-							"key": "Content-Type",
-							"value": "application/json; charset=utf-8"
-						},
-						{
-							"key": "Content-Length",
-							"value": "192"
-						},
-						{
-							"key": "ETag",
-							"value": "W/\"c0-2/Of/yrs+uGsjB5EH8Umua1Bg4I\""
-						},
-						{
-							"key": "Date",
-							"value": "Thu, 09 Nov 2023 14:46:47 GMT"
-						},
-						{
-							"key": "Connection",
-							"value": "keep-alive"
-						},
-						{
-							"key": "Keep-Alive",
-							"value": "timeout=5"
-						}
-					],
-					"cookie": [],
-					"body": "{\n    \"message\": \"Success\",\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywiZW1haWwiOiJ3aW53aW5AZ21haWwuY29tIiwiaWF0IjoxNjk5NTQxMjA3fQ.jejv6ODFkM2lQWsPTrx27kJLo5tuJH_BBsIhv5xZQT0\"\n    }\n}"
 				}
-			]
+			},
+			"response": []
+		},
+		{
+			"name": "LupaPassword",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"ayutiaraa25@gmail.com\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/auth/forgot-password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"auth",
+						"forgot-password"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Password",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"ayutiaraa25@gmail.com\",\r\n  \"otp\": \"889864\", \r\n  \"newPassword\": \"sky!1234\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8003/auth/reset-password",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8003",
+					"path": [
+						"auth",
+						"reset-password"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }

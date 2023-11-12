@@ -1,3 +1,5 @@
+const Sequelize = require('sequelize');
+
 module.exports = (sequelize, Sequelize) => {
     const User = sequelize.define('register_user', {
         id: {
@@ -14,7 +16,13 @@ module.exports = (sequelize, Sequelize) => {
         },
         password: {
             type: Sequelize.STRING
-        }
+        },
+        resetToken: {
+            type: Sequelize.STRING,
+        },
+        resetTokenExpires: {
+            type: Sequelize.DATE,
+        },
     });
 
     return User;
