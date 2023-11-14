@@ -3,8 +3,8 @@ module.exports = {
   port: 587,
   secure: false,
   auth: {
-    user: "ayutiaraa25@gmail.com",
-    pass: "aato kjza drkq qvzb",
+    user: "chillicaree@gmail.com",
+    pass: "oliw puww bthu hujv",
   },
   tls: {
     rejectUnauthorized: false, // Menonaktifkan verifikasi sertifikat
