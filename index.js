@@ -44,7 +44,9 @@ app.post("/auth/register", registerValidator, async (req, res) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ message: "Email sudah terdaftar" });
+      return res.status(400).json({ 
+        status: "failed",
+        message: "Email sudah terdaftar" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
