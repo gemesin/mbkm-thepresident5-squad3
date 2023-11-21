@@ -331,8 +331,8 @@ app.get("/weather", async (req,res) => {
     acc = acc.filter(data => data.date !== currentDate); // Hapus data lama untuk tanggal tersebut
     acc.push({
       date: currentDate,
-      timestamp: item.dt,
-      //temperature: item.main.temp,
+      //timestamp: item.dt,
+      temperature: item.main.temp,
       weatherDescription: item.weather[0].description,
     });
   }
