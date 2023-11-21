@@ -13,6 +13,7 @@ const db = require("./models");
 const { userModel } = require("./models");
 const sendEmail = require("./middlewares/email-sender");
 const axios = require('axios');
+const {Weather} = require("./models");
 
 app.use(express.json());
 
@@ -295,15 +296,11 @@ function calculateDewPoint(temperature, humidity) {
 app.get("/weather", async (req,res) => {
 
   try {
-    const { q } = req.query;
-    const apiKey = '8d78ae10347e47692718716fde207880';
-
-    if (!q) {
-      return res.status(400).json({ error: 'Nama kota (q) harus disertakan dalam permintaan.' });
-    }
+    const { lat, lon } = req.query;
+    const apiKey = '859110c5e10e40ca3fd54dabb1a31914';
 
     // Mendapatkan data cuaca saat ini
-    const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&units=metric&appid=${apiKey}`;
+    const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
     const currentWeatherResponse = await axios.get(currentWeatherUrl);
 
     // Check if the response contains an error message
@@ -318,10 +315,36 @@ app.get("/weather", async (req,res) => {
     const sunrise = new Date(currentWeatherData.sys.sunrise * 1000).toLocaleTimeString();
     const sunset = new Date(currentWeatherData.sys.sunset * 1000).toLocaleTimeString();
 
-    // Mendapatkan data perkiraan cuaca 5 hari ke depan
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(q)}&units=metric&appid=${apiKey}`;
+    // Mendapatkan data perkiraan cuaca 5 hari ke depan berdasarkan latitude dan longitude
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
     const forecastResponse = await axios.get(forecastUrl);
     const forecastData = forecastResponse.data;
+
+
+// Menampilkan data perkiraan cuaca 5 hari ke depan (hanya data terakhir setiap tanggal)
+      const forecastList = forecastData.list.reduce((acc, item) => {
+      const currentDate = new Date(item.dt * 1000).toLocaleDateString();
+      const existingData = acc.find(data => data.date === currentDate);
+
+  if (!existingData || item.dt > existingData.timestamp) {
+    // Jika belum ada data untuk tanggal tersebut atau data yang baru lebih baru
+    acc = acc.filter(data => data.date !== currentDate); // Hapus data lama untuk tanggal tersebut
+    acc.push({
+      date: currentDate,
+      timestamp: item.dt,
+      temperature: item.main.temp,
+      weatherDescription: item.weather[0].description,
+    });
+  }
+
+  return acc;
+}, []);
+
+    // Mendapatkan data perkiraan cuaca per jam berdasarkan latitude dan longitude
+    const hourlyWeatherUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,daily,alerts&units=metric&appid=${apiKey}`;
+    const hourlyWeatherResponse = await axios.get(hourlyWeatherUrl);
+    const hourlyWeatherData = hourlyWeatherResponse.data;
+
 
     // Menampilkan data suhu, cuaca, dan kelembaban dalam respons untuk cuaca saat ini
     const currentTemperature = currentWeatherData.main.temp;
@@ -368,13 +391,31 @@ app.get("/weather", async (req,res) => {
     }
     
 
-    // Menampilkan data perkiraan cuaca 5 hari ke depan
-    const forecastList = forecastData.list.slice(0, 5).map(item => ({
-      date: new Date(item.dt * 1000).toLocaleDateString(),
-      temperature: item.main.temp,
-      weatherDescription: item.weather[0].description,
-      //humidity: item.main.humidity
-    })); 
+    // Mendapatkan data perkiraan cuaca 1 jam ke depan
+    const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 24).map(hour => ({
+      time: new Date(hour.dt * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      temperature: hour.temp,
+      weatherDescription: hour.weather[0].description,
+    }));
+  
+
+    const insertedWeatherData = await Weather.create({
+      
+        city: currentCityName,
+        temperature: currentTemperature,
+        weatherDescription: currentWeatherDescription,
+        humidity: currentHumidity,
+        dewPoint: currentDewPoint,
+        windSpeed:`${windSpeed} m/s`,
+        windDirection: windDirectionText,
+        sunrise: sunrise,
+        sunset: sunset,
+        status: status,
+        hourlyWeather: hourlyWeatherList,
+        forecast: forecastList,
+  
+      
+  });
 
 
     const responseData = {
@@ -390,7 +431,8 @@ app.get("/weather", async (req,res) => {
         sunset: sunset,
         status: status
       },
-      forecast: forecastList
+      hourlyweather: hourlyWeatherList,
+      forecast: forecastList,
     };
 
     res.json(responseData);
@@ -406,7 +448,7 @@ app.get("/weather2", async (req,res) => {
 
   try {
     const { q } = req.query; // Mengganti lat dan lon dengan q
-    const apiKey = '8d78ae10347e47692718716fde207880'; // Gantilah dengan kunci API Anda
+    const apiKey = '859110c5e10e40ca3fd54dabb1a31914'; // Gantilah dengan kunci API Anda
 
     if (!q) {
       return res.status(400).json({ error: 'Nama kota (q) harus disertakan dalam permintaan.' });

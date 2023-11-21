@@ -24,5 +24,7 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.userModel = require('./user.model')(sequelize, Sequelize);
+db.Weather = require('./weather.model')(sequelize, Sequelize);
+
 
 module.exports = db;
