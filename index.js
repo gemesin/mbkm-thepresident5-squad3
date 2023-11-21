@@ -312,9 +312,24 @@ app.get("/weather", async (req,res) => {
     const currentWeatherData = currentWeatherResponse.data;
 
     // Mendapatkan waktu matahari terbit dan terbenam
-    const sunrise = new Date(currentWeatherData.sys.sunrise * 1000).toLocaleTimeString();
-    const sunset = new Date(currentWeatherData.sys.sunset * 1000).toLocaleTimeString();
+    //const sunrise = new Date(currentWeatherData.sys.sunrise * 1000).toLocaleTimeString();
+    //const sunset = new Date(currentWeatherData.sys.sunset * 1000).toLocaleTimeString();
 
+    const sunriseTimestamp = currentWeatherData.sys.sunrise;
+    const sunsetTimestamp = currentWeatherData.sys.sunset;
+
+      let sunrise, sunset;
+
+      if (sunriseTimestamp && sunsetTimestamp) {
+        const offsetHours = 7; // Ubah sesuai kebutuhan
+        sunrise = new Date((sunriseTimestamp - offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        sunset = new Date((sunsetTimestamp - offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      } else {
+        // Atur nilai default jika waktu tidak tersedia
+        sunrise = null;
+        sunset = null;
+      }
+    
     // Mendapatkan data perkiraan cuaca 5 hari ke depan berdasarkan latitude dan longitude
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
     const forecastResponse = await axios.get(forecastUrl);
