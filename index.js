@@ -322,8 +322,8 @@ app.get("/weather", async (req,res) => {
 
       if (sunriseTimestamp && sunsetTimestamp) {
         const offsetHours = 7; // Ubah sesuai kebutuhan
-        sunrise = new Date((sunriseTimestamp - offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        sunset = new Date((sunsetTimestamp - offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        sunrise = new Date((sunriseTimestamp + offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        sunset = new Date((sunsetTimestamp + offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
       } else {
         // Atur nilai default jika waktu tidak tersedia
         sunrise = null;
