@@ -407,7 +407,7 @@ app.get("/weather", async (req,res) => {
     
 
     // Mendapatkan data perkiraan cuaca 1 jam ke depan
-    const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 24).map(hour => ({
+    const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 5).map(hour => ({
       time: new Date(hour.dt * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
       temperature: hour.temp,
       weatherDescription: hour.weather[0].description,
