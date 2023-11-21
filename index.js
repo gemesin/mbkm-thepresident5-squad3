@@ -332,7 +332,7 @@ app.get("/weather", async (req,res) => {
     acc.push({
       date: currentDate,
       timestamp: item.dt,
-      temperature: item.main.temp,
+      //temperature: item.main.temp,
       weatherDescription: item.weather[0].description,
     });
   }
@@ -443,42 +443,6 @@ app.get("/weather", async (req,res) => {
   }
 
 });
-
-app.get("/weather2", async (req,res) => {
-
-  try {
-    const { q } = req.query; // Mengganti lat dan lon dengan q
-    const apiKey = '859110c5e10e40ca3fd54dabb1a31914'; // Gantilah dengan kunci API Anda
-
-    if (!q) {
-      return res.status(400).json({ error: 'Nama kota (q) harus disertakan dalam permintaan.' });
-    }
-
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(q)}&units=metric&appid=${apiKey}`;
-    const response = await axios.get(apiUrl);
-    const weatherData = response.data;
-
-    // Menampilkan data suhu, cuaca, dan kelembaban dalam respons
-    const temperature = weatherData.main.temp;
-    const weatherDescription = weatherData.weather[0].description;
-    const humidity = weatherData.main.humidity;
-    const cityName = weatherData.name;
-
-    const responseData = {
-      city: cityName,
-      temperature: temperature,
-      weatherDescription: weatherDescription,
-      humidity: humidity
-    };
-
-    res.json(responseData);
-  } catch (error) {
-    console.error('Terjadi kesalahan:', error);
-    res.status(500).json({ error: 'Terjadi kesalahan dalam permintaan.' });
-  }
-
-});
-
 
 
 const port = 8003;
