@@ -14,7 +14,6 @@ const { userModel } = require("./models");
 const sendEmail = require("./middlewares/email-sender");
 const axios = require('axios');
 const {Weather} = require("./models");
-const artikelRoutes = require("./routes/artikel.routes");
 
 app.use(express.json());
 
@@ -460,10 +459,6 @@ app.get("/weather", async (req,res) => {
   }
 
 });
-
-app.use("/artikel", artikelRoutes);
-
-app.use('/covers',express.static('covers'));
 
 const port = 8003;
 
