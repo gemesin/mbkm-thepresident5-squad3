@@ -309,7 +309,74 @@ app.get("/weather", async (req,res) => {
       return res.status(currentWeatherResponse.data.cod).json({ error: currentWeatherResponse.data.message });
     }
 
+    // Cek apakah data cuaca sudah ada dalam database untuk lokasi dan waktu yang sesuai
+    const currentTime = new Date();
+    const twentyMinutesAgo = new Date(currentTime - 20 * 60 * 1000);
+    const tolerance = 0.0001;
+    const weatherData = await Weather.findOne({
+      where: {
+        latitude: {
+          [Op.between]: [parseFloat(lat) - tolerance, parseFloat(lat) + tolerance]
+        },
+        longitude: {
+          [Op.between]: [parseFloat(lon) - tolerance, parseFloat(lon) + tolerance]
+        },
+        timestamp: {
+          [Op.gte]: twentyMinutesAgo
+        },
+      },
+      order: [['timestamp', 'DESC']],
+    });
+
+    if (weatherData) {
+      console.log('Query Where:', {
+        hasil: weatherData,
+        Weather: weatherData,
+        timestamp: {
+          [Op.gte]: twentyMinutesAgo
+        }
+      });
+      const anotherWeatherData = await Weather.findOne({
+        where: {
+          latitude: {
+            [Op.between]: [parseFloat(lat) - tolerance, parseFloat(lat) + tolerance]
+          },
+          longitude: {
+            [Op.between]: [parseFloat(lon) - tolerance, parseFloat(lon) + tolerance]
+          },
+          timestamp: {
+            [Op.gte]: twentyMinutesAgo
+          },
+        },
+        order: [['timestamp', 'DESC']]
+      });
+
+        if (anotherWeatherData) {
+            // Jika data cuaca ada dalam database dan masih valid
+            return res.json({
+              currentWeather: {
+                city: weatherData.city,
+                latitude: weatherData.latitude,
+                longitude: weatherData.longitude,
+                timestamp: weatherData.timestamp,
+                temperature: weatherData.temperature,
+                weatherDescription: weatherData.weatherDescription,
+                humidity: weatherData.humidity,
+                dewPoint: weatherData.dewPoint,
+                windSpeed:weatherData.windSpeed,
+                windDirection: weatherData.windDirection,
+                sunrise: weatherData.sunrise,
+                sunset: weatherData.sunset,
+                status: weatherData.status
+              },
+              hourlyweather: weatherData.hourlyWeather,
+              forecast: weatherData.forecast 
+            });
+        }
+    }
+
     const currentWeatherData = currentWeatherResponse.data;
+    const currentTimestamp = currentWeatherData.dt + 7 * 3600;
 
     // Mendapatkan waktu matahari terbit dan terbenam
     //const sunrise = new Date(currentWeatherData.sys.sunrise * 1000).toLocaleTimeString();
@@ -418,6 +485,9 @@ app.get("/weather", async (req,res) => {
     const insertedWeatherData = await Weather.create({
       
         city: currentCityName,
+        latitude: lat,
+        longitude: lon, 
+        timestamp: currentTime,
         temperature: currentTemperature,
         weatherDescription: currentWeatherDescription,
         humidity: currentHumidity,
@@ -437,6 +507,9 @@ app.get("/weather", async (req,res) => {
     const responseData = {
       currentWeather: {
         city: currentCityName,
+        latitude: lat,
+        longitude: lon, 
+        timestamp: currentTime,
         temperature: currentTemperature,
         weatherDescription: currentWeatherDescription,
         humidity: currentHumidity,

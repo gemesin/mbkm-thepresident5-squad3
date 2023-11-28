@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  const Weather = sequelize.define('Weather', {
+  const Weather = sequelize.define('weather', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -11,6 +11,18 @@ module.exports = (sequelize, DataTypes) => {
     city: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    timestamp: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     temperature: {
       type: DataTypes.DECIMAL(5, 2),
