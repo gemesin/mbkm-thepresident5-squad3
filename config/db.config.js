@@ -4,7 +4,7 @@ const dbConfig = {
     PASSWORD: 'root@msib',
     DB: 'msib_squad3',
     DIALECT: 'mysql',
-    PORT: 3600
+    PORT: 3306
 }
 
 module.exports = dbConfig;
