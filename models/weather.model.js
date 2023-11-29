@@ -67,6 +67,10 @@ module.exports = (sequelize, DataTypes) => {
     forecast: {
       type: DataTypes.JSON,
       allowNull: false
+    },
+    icon: {
+      type: DataTypes.STRING,
+      allowNull: false
     }
   });
 

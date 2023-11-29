@@ -14,6 +14,8 @@ const { userModel } = require("./models");
 const sendEmail = require("./middlewares/email-sender");
 const axios = require('axios');
 const {Weather} = require("./models");
+const artikelRoutes = require("./routes/artikel.routes");
+
 
 app.use(express.json());
 
@@ -293,6 +295,15 @@ function calculateDewPoint(temperature, humidity) {
   return dewPoint.toFixed(2); // You can adjust the number of decimal places as needed
 }
 
+// let icon = {
+
+//   rain: "https://i.imgur.com/oqU2rAr.png", // 5xx Rain
+//   snow: "https://i.imgur.com/1YKOgqt.png", // 6xx Snow
+//   atmosphere: "https://i.imgur.com/3ySKAbw.png", // 7xx Atmosphere
+//   clouds: "https://i.imgur.com/o4BgyTR.png", // 80x Clouds
+//   clear: "https://i.imgur.com/XhlFmO6.png," // 800 Clear
+//   }
+
 app.get("/weather", async (req,res) => {
 
   try {
@@ -308,6 +319,19 @@ app.get("/weather", async (req,res) => {
       // Invalid API key or other error
       return res.status(currentWeatherResponse.data.cod).json({ error: currentWeatherResponse.data.message });
     }
+
+    // let weatherIcon = '';
+    // if (isCloudy(currentWeatherDescription)) {
+    //   weatherIcon = icon.clouds;
+    // } else if (isRainy(currentWeatherDescription)) {
+    //   weatherIcon = icon.rain;
+    // } else if (isClear(currentWeatherDescription)) {
+    //   weatherIcon = icon.clear;
+    // } else if (isAtmosphere(currentWeatherDescription)) {
+    //   weatherIcon = icon.atmosphere;
+    // } else if (isSnow(currentWeatherDescription)) {
+    //   weatherIcon = icon.snow;
+    // }
 
     // Cek apakah data cuaca sudah ada dalam database untuk lokasi dan waktu yang sesuai
     const currentTime = new Date();
@@ -367,7 +391,8 @@ app.get("/weather", async (req,res) => {
                 windDirection: weatherData.windDirection,
                 sunrise: weatherData.sunrise,
                 sunset: weatherData.sunset,
-                status: weatherData.status
+                status: weatherData.status,
+                icon: weatherData.icon
               },
               hourlyweather: weatherData.hourlyWeather,
               forecast: weatherData.forecast 
@@ -472,6 +497,18 @@ app.get("/weather", async (req,res) => {
       status = 'Waduh sedang turun salju, segera selamatkan tanaman Anda!';
     }
     
+    let icon = '';
+    if(isCloudy(currentWeatherDescription)){
+      icon = 'https://i.imgur.com/o4BgyTR.png';
+    } else if (isRainy(currentWeatherDescription)){
+      icon = 'https://i.imgur.com/oqU2rAr.png';
+    } else if (isClear(currentWeatherDescription)){
+      icon = 'https://i.imgur.com/XhlFmO6.png';
+    } else if (isAtmosphere(currentWeatherDescription)){
+      icon = 'https://i.imgur.com/3ySKAbw.png'; 
+    } else if (isSnow(currentWeatherDescription)){
+      icon = 'https://i.imgur.com/1YKOg';
+    }
 
     // Mendapatkan data perkiraan cuaca 1 jam ke depan
     const offsetHours = 7; // Ubah sesuai kebutuhan
@@ -497,6 +534,7 @@ app.get("/weather", async (req,res) => {
         sunrise: sunrise,
         sunset: sunset,
         status: status,
+        icon: icon,
         hourlyWeather: hourlyWeatherList,
         forecast: forecastList,
   
@@ -518,7 +556,8 @@ app.get("/weather", async (req,res) => {
         windDirection: windDirectionText,
         sunrise: sunrise,
         sunset: sunset,
-        status: status
+        status: status,
+        icon: icon,
       },
       hourlyweather: hourlyWeatherList,
       forecast: forecastList,
@@ -533,6 +572,9 @@ app.get("/weather", async (req,res) => {
 
 });
 
+app.use("/artikel", artikelRoutes);
+
+app.use('/covers',express.static('covers'))
 const port = 8003;
 
 app.listen(port, () => {
