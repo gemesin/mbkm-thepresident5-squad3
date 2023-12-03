@@ -426,63 +426,45 @@ app.get("/weather", async (req,res) => {
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
     const forecastResponse = await axios.get(forecastUrl);
     const forecastData = forecastResponse.data;
-    if(isCloudy(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/o4BgyTR.png';
-    } else if (isRainy(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/oqU2rAr.png';
-    } else if (isClear(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/XhlFmO6.png';
-    } else if (isAtmosphere(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/3ySKAbw.png'; 
-    } else if (isSnow(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/1YKOg';
-    }
+
 
 // Menampilkan data perkiraan cuaca 5 hari ke depan (hanya data terakhir setiap tanggal)
       const forecastList = forecastData.list.reduce((acc, item) => {
       const currentDate = new Date(item.dt * 1000).toLocaleDateString();
       const existingData = acc.find(data => data.date === currentDate);
-      if(isCloudy(currentWeatherDescription)){
-        icon = 'https://i.imgur.com/o4BgyTR.png';
-      } else if (isRainy(currentWeatherDescription)){
-        icon = 'https://i.imgur.com/oqU2rAr.png';
-      } else if (isClear(currentWeatherDescription)){
-        icon = 'https://i.imgur.com/XhlFmO6.png';
-      } else if (isAtmosphere(currentWeatherDescription)){
-        icon = 'https://i.imgur.com/3ySKAbw.png'; 
-      } else if (isSnow(currentWeatherDescription)){
-        icon = 'https://i.imgur.com/1YKOg';
+
+      if (!existingData || item.dt > existingData.timestamp) {
+        acc = acc.filter(data => data.date !== currentDate);
+        let iconUrl = '';
+    
+        if (isCloudy(item.weather[0].description)) {
+          iconUrl = 'https://i.imgur.com/o4BgyTR.png';
+        } else if (isRainy(item.weather[0].description)) {
+          iconUrl = 'https://i.imgur.com/oqU2rAr.png';
+        } else if (isClear(item.weather[0].description)) {
+          iconUrl = 'https://i.imgur.com/XhlFmO6.png';
+        } else if (isAtmosphere(item.weather[0].description)) {
+          iconUrl = 'https://i.imgur.com/3ySKAbw.png';
+        } else if (isSnow(item.weather[0].description)) {
+          iconUrl = 'https://i.imgur.com/1YKOg';
+        }
+    
+        acc.push({
+          date: currentDate,
+          temperature: item.main.temp,
+          weatherDescription: item.weather[0].description,
+          icon: iconUrl,
+        });
       }
-
-  if (!existingData || item.dt > existingData.timestamp) {
-    // Jika belum ada data untuk tanggal tersebut atau data yang baru lebih baru
-    acc = acc.filter(data => data.date !== currentDate); // Hapus data lama untuk tanggal tersebut
-    acc.push({
-      date: currentDate,
-      //timestamp: item.dt,
-      temperature: item.main.temp,
-      weatherDescription: item.weather[0].description,
-    });
-  }
-
-  return acc;
-}, []);
+    
+      return acc;
+    }, []);
 
     // Mendapatkan data perkiraan cuaca per jam berdasarkan latitude dan longitude
     const hourlyWeatherUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,daily,alerts&units=metric&appid=${apiKey}`;
     const hourlyWeatherResponse = await axios.get(hourlyWeatherUrl);
     const hourlyWeatherData = hourlyWeatherResponse.data;
-    if(isCloudy(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/o4BgyTR.png';
-    } else if (isRainy(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/oqU2rAr.png';
-    } else if (isClear(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/XhlFmO6.png';
-    } else if (isAtmosphere(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/3ySKAbw.png'; 
-    } else if (isSnow(currentWeatherDescription)){
-      icon = 'https://i.imgur.com/1YKOg';
-    }
+
 
     // Menampilkan data suhu, cuaca, dan kelembaban dalam respons untuk cuaca saat ini
     const currentTemperature = currentWeatherData.main.temp;
@@ -547,6 +529,7 @@ app.get("/weather", async (req,res) => {
     time: new Date((hour.dt + offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
     temperature: hour.temp,
     weatherDescription: hour.weather[0].description,
+    icon : icon,
     }));
   
 
