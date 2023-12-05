@@ -523,14 +523,30 @@ app.get("/weather", async (req,res) => {
       icon = 'https://i.imgur.com/1YKOg';
     }
 
-    // Mendapatkan data perkiraan cuaca 1 jam ke depan
-    const offsetHours = 7; // Ubah sesuai kebutuhan
-    const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 4).map(hour => ({
+     // Mendapatkan data perkiraan cuaca 1 jam ke depan
+const offsetHours = 7; // Ubah sesuai kebutuhan
+const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 4).map(hour => {
+  let iconUrl = '';
+
+  if (isCloudy(hour.weather[0].description)) {
+    iconUrl = 'https://i.imgur.com/o4BgyTR.png';
+  } else if (isRainy(hour.weather[0].description)) {
+    iconUrl = 'https://i.imgur.com/oqU2rAr.png';
+  } else if (isClear(hour.weather[0].description)) {
+    iconUrl = 'https://i.imgur.com/XhlFmO6.png';
+  } else if (isAtmosphere(hour.weather[0].description)) {
+    iconUrl = 'https://i.imgur.com/3ySKAbw.png';
+  } else if (isSnow(hour.weather[0].description)) {
+    iconUrl = 'https://i.imgur.com/1YKOg';
+  }
+
+  return {
     time: new Date((hour.dt + offsetHours * 3600) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
     temperature: hour.temp,
     weatherDescription: hour.weather[0].description,
-    icon : icon,
-    }));
+    icon: iconUrl,
+  };
+});
   
 
     const insertedWeatherData = await Weather.create({
