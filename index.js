@@ -525,7 +525,7 @@ app.get("/weather", async (req,res) => {
 
      // Mendapatkan data perkiraan cuaca 1 jam ke depan
 const offsetHours = 7; // Ubah sesuai kebutuhan
-const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 4).map(hour => {
+const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 10).map(hour => {
   let iconUrl = '';
 
   if (isCloudy(hour.weather[0].description)) {
