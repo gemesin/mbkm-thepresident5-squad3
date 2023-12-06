@@ -23,5 +23,6 @@
     "sequelize": "^6.34.0",
     "winston": "^3.11.0",
     "winston-loggly-bulk": "^3.3.0"
-  }
+  },
+  "devDependencies": {}
 }

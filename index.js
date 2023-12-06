@@ -16,6 +16,9 @@ const axios = require('axios');
 const {Weather} = require("./models");
 const artikelRoutes = require("./routes/artikel.routes");
 const lmsRoutes = require("./routes/lms.routes");
+const forumRoute = require('./routes/forum.routes');
+const uploadImages = require("./routes/upload.route");
+
 
 app.use(express.json());
 
@@ -607,6 +610,11 @@ app.use("/artikel", artikelRoutes);
 app.use("/lms", lmsRoutes);
 
 app.use('/covers',express.static('covers'))
+
+app.use("/upload",uploadImages);
+app.use("/forum",forumRoute);
+
+app.use('/images',express.static('images'))
 
 const port = 8003;
 

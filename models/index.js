@@ -27,6 +27,8 @@ db.userModel = require('./user.model')(sequelize, Sequelize);
 db.Weather = require('./weather.model')(sequelize, Sequelize);
 db.Artikel = require('./artikel.model.js')(sequelize, Sequelize);
 db.Modul = require('./modul.model.js')(sequelize, Sequelize);
+db.ForumModel = require('./forum.model')(sequelize, Sequelize);
+db.commentModel = require('./comment.model')(sequelize, Sequelize);
 
 
 
