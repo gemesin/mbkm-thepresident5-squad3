@@ -15,7 +15,7 @@ const sendEmail = require("./middlewares/email-sender");
 const axios = require('axios');
 const {Weather} = require("./models");
 const artikelRoutes = require("./routes/artikel.routes");
-
+const lmsRoutes = require("./routes/lms.routes");
 
 app.use(express.json());
 
@@ -524,9 +524,9 @@ app.get("/weather", async (req,res) => {
     }
 
      // Mendapatkan data perkiraan cuaca 1 jam ke depan
-const offsetHours = 7; // Ubah sesuai kebutuhan
-const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 10).map(hour => {
-  let iconUrl = '';
+    const offsetHours = 7; // Ubah sesuai kebutuhan
+    const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 10).map(hour => {
+      let iconUrl = '';
 
   if (isCloudy(hour.weather[0].description)) {
     iconUrl = 'https://i.imgur.com/o4BgyTR.png';
@@ -604,7 +604,10 @@ const hourlyWeatherList = hourlyWeatherData.hourly.slice(0, 10).map(hour => {
 
 app.use("/artikel", artikelRoutes);
 
+app.use("/lms", lmsRoutes);
+
 app.use('/covers',express.static('covers'))
+
 const port = 8003;
 
 app.listen(port, () => {
