@@ -12,10 +12,10 @@ const fs = require('fs').promises;
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'images/'); // Direktori tempat menyimpan file
+    cb(null, 'images/'); // Directory to store files
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Nama file yang disimpan
+    cb(null, Date.now() + path.extname(file.originalname)); // Filename to be saved
   },
 });
 
@@ -23,76 +23,89 @@ const upload = multer({ storage: storage });
 
 router.use(express.json());
 router.use(express.urlencoded({ extended: true }));
-router.post('/posting', protect, upload.single('image'), async (req, res) => {
+
+const uploadMultiple = upload.array('images', 5); // Using the defined 'upload' middleware for multiple file uploads
+
+router.post('/buat_postingan', protect, uploadMultiple, async (req, res) => {
   try {
     const loggedInUser = req.user;
-    const forum = req.body.isi;
-    const uploadedFile = req.file;
+    const forum = req.body.captions;
+    const uploadedFiles = req.files;
 
-    if (!uploadedFile) {
-      const forumbaru = await ForumModel.create({
-        id_user: loggedInUser.id,
-        name: loggedInUser.fullName || 'Default Name', // Change this to a default name if fullName is not available
-        captions: forum,
-        image: null,
-      });
-
-      return res.status(201).json({
-        error: false,
-        message: "Tambah forum berhasil",
-        Ulasan: {
-          id_user: forumbaru.id_user,
-          name: forumbaru.name,
-          isi: forumbaru.captions,
-          image: forumbaru.image,
-        },
+    if (!uploadedFiles || uploadedFiles.length === 0) {
+      // Handling case where no images were uploaded
+      return res.status(400).json({
+        error: true,
+        message: 'No images were uploaded.',
       });
     }
 
-    const filePath = path.join('images', uploadedFile.filename);
-    const fileUrl = req.protocol + '://' + req.get('host') + '/' + filePath;
+    const fileUrls = [];
+    const fileNames = [];
+for (const file of uploadedFiles) {
+  fileNames.push(file.filename);
+}
+    const images = [];
+for (const file of uploadedFiles) {
+  const filePath = '/images/' + file.filename; // Updated path
+  fileUrls.push(req.protocol + '://' + req.get('host') + filePath);
+  images.push(file);
+}
 
-    const forumbaru = await ForumModel.create({
-      id_user: loggedInUser.id,
-      name: loggedInUser.fullName || 'Default Name', // Change this to a default name if fullName is not available
-      captions: forum,
-      image: fileUrl,
-    });
+const forumbaru = await ForumModel.create({
+  id_user: loggedInUser.id,
+  name: loggedInUser.fullName || 'Default Name',
+  captions: forum,
+  image: fileUrls.join(','), // Simpan nama file sebagai string yang dipisahkan koma
+  createdAt: new Date(),
+});
 
-    return res.status(201).json({
+
+    const responseData = {
       error: false,
-      message: "Tambah forum berhasil",
-      Ulasan: {
+      message: 'Tambah forum berhasil',
+      forum: {
         id_user: forumbaru.id_user,
         name: forumbaru.name,
-        isi: forumbaru.captions,
-        image: forumbaru.image,
+        captions: forumbaru.captions,
+        image: fileUrls,
+        createdAt: forumbaru.createdAt.toISOString(),
       },
-    });
+    };
+
+    return res.status(201).json(responseData);
   } catch (error) {
     console.error(error);
     res.status(400).json({
       error: true,
-      message: 'Terjadi kesalahan saat mengunggah file atau menambah forum.',
+      message: 'Terjadi kesalahan saat menambah forum.',
     });
   }
 });
 
 
-router.get('/allforum', protect, async (req, res) => {
+router.get('/semua_postingan', protect, async (req, res) => {
   try {
-    
     const allForum = await ForumModel.findAll();
 
     const forumDenganKomentar = await Promise.all(allForum.map(async (forum) => {
-      const jumlahKomentar = await commentModel.count({ where:{id_forum: forum.id }});
-      return {
+      const jumlahKomentar = await commentModel.count({ where: { id_forum: forum.id } });
+      let images = [];
+      if (forum.image) {
+        images = forum.image.split(',').map(path => path.replace('images\\', 'images/'));
+      }
+      const forumData = {
         forumId: forum.id,
         judul: forum.judul,
         isi: forum.isi,
-        image: forum.image,
+        image: images,
         jumlahKomentar: jumlahKomentar,
+        captions: forum.captions,
+        createdAt: forum.createdAt.toISOString(),
+        id_user: forum.id_user, // Menambahkan ID pengguna
+        name_user: forum.name, // Menambahkan nama pengguna
       };
+      return forumData;
     }));
 
     res.json(forumDenganKomentar);
@@ -100,11 +113,13 @@ router.get('/allforum', protect, async (req, res) => {
     console.error(error);
     res.status(400).json({
       error: true,
-       message: 'Terjadi kesalahan saat mengambil data forum.' });
+      message: 'Terjadi kesalahan saat mengambil data forum.'
+    });
   }
 });
 
-router.get('/forum/:id', protect, async (req, res) => {
+
+router.get('/postingan/:id', protect, async (req, res) => {
   try {
     const forumId = req.params.id;
 
@@ -125,14 +140,16 @@ router.get('/forum/:id', protect, async (req, res) => {
       forum: {
         id_user: forum.id_user,
         name: forum.name,
-        captions: forum.captions, // Menambahkan captions ke respons
-        image: forum.image,
+        captions: forum.captions,
+        image: forum.image.split(',').map(path => path.replace('images\\', 'images/')),
       },
-      komentars: komentars.map(komentar => ({
+      komentars: komentars.map((komentar, index) => ({
+        id_komentar: komentar.id, // Menambahkan id_komentar sesuai dengan id di database
         id_user: komentar.id_user,
         name: komentar.name,
         isi: komentar.comment,
         image: komentar.image,
+        createdAt: komentar.createdAt, // Menambahkan informasi createdAt pada komentar
       })),
     };
 
@@ -147,11 +164,14 @@ router.get('/forum/:id', protect, async (req, res) => {
 });
 
 
-router.post('/balasan/:id_forum', protect, async (req, res) => {
+
+
+router.post('/komentar/:id_forum', protect, async (req, res) => {
   try {
     const loggedInUser = req.user;
     const idForum = req.params.id_forum;
-    const { isi } = req.body;
+    const { komentar } = req.body;
+
     const forum = await ForumModel.findByPk(idForum);
 
     if (!forum) {
@@ -163,19 +183,21 @@ router.post('/balasan/:id_forum', protect, async (req, res) => {
 
     const komentarBaru = await commentModel.create({
       id_user: loggedInUser.id,
-      id_target: forum.id_user, // Menggunakan ID forum sebagai ID target
+      id_target: forum.id_user,
       name: loggedInUser.fullName || 'Default Name',
       id_forum: idForum,
-      comment: isi,
+      comment: komentar,
+      
     });
 
     return res.status(201).json({
       error: false,
       message: 'Balasan berhasil ditambahkan',
       Balasan: {
+        id_komentar: komentarBaru.id,
         id_user: komentarBaru.id_user,
         name: komentarBaru.name,
-        isi: komentarBaru.comment,
+        komentar: komentarBaru.comment, // Menggunakan nilai dari 'komentar'
       },
     });
   } catch (error) {
@@ -188,11 +210,13 @@ router.post('/balasan/:id_forum', protect, async (req, res) => {
   }
 });
 
-router.put('/edit/:id', protect, upload.single('image'), async (req, res) => {
+
+
+router.put('/edit_captions/:id', protect, upload.single('image'), async (req, res) => {
   try {
     const loggedInUser = req.user;
     const forumId = req.params.id;
-    const { isi, captions } = req.body; // Ambil isi dan captions dari form data
+    const { isi, captions } = req.body;
 
     const forum = await ForumModel.findByPk(forumId);
 
@@ -203,7 +227,6 @@ router.put('/edit/:id', protect, upload.single('image'), async (req, res) => {
       });
     }
 
-    // Memeriksa apakah pengguna memiliki izin untuk mengedit forum
     if (forum.id_user !== loggedInUser.id) {
       return res.status(403).json({
         error: true,
@@ -211,17 +234,18 @@ router.put('/edit/:id', protect, upload.single('image'), async (req, res) => {
       });
     }
 
-    let imagePath = forum.image; // Menyimpan path gambar yang sudah ada
-
-    // Jika ada file gambar yang diunggah, gunakan yang baru
+    // Memeriksa jika ada file gambar yang diunggah
     if (req.file) {
-      imagePath = 'http://localhost:8003/' + req.file.path.replace(/\\/g, '/'); // Mengubah path menjadi URL lengkap
+      return res.status(400).json({
+        error: true,
+        message: 'Anda tidak diizinkan mengubah gambar.',
+      });
     }
 
-    // Melakukan pembaruan forum
-    await forum.update({ isi, captions, image: imagePath }); // Memperbarui isi, captions, dan gambar
+    // Melakukan pembaruan hanya untuk isi dan captions
+    await forum.update({ isi, captions });
 
-    // Mengambil forum setelah diperbarui dari database
+    // Mengambil forum yang sudah diperbarui dari database
     const updatedForum = await ForumModel.findByPk(forumId);
 
     return res.status(200).json({
@@ -231,8 +255,8 @@ router.put('/edit/:id', protect, upload.single('image'), async (req, res) => {
         id_user: updatedForum.id_user,
         name: updatedForum.name,
         isi: updatedForum.isi,
-        image: updatedForum.image.replace('images\\', 'images/'), // Mengubah format path image
-        captions: updatedForum.captions, // Menampilkan captions yang baru
+        image: updatedForum.image.split(',').map(path => path.replace('images\\', 'images/')), // Menampilkan kembali informasi gambar yang ada sebelumnya
+        captions: updatedForum.captions,
       },
     });
   } catch (error) {
@@ -245,8 +269,11 @@ router.put('/edit/:id', protect, upload.single('image'), async (req, res) => {
   }
 });
 
+
+
+
 // Delete forum by ID
-router.delete('/hapus/:id', protect, async (req, res) => {
+router.delete('/hapus_postingan/:id', protect, async (req, res) => {
   try {
     const loggedInUser = req.user;
     const forumId = req.params.id;
