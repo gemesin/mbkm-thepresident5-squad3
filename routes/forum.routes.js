@@ -9,6 +9,8 @@ const path = require('node:path');
 const { uptime } = require('node:process');
 const forumModel = require('../models/forum.model');
 const fs = require('fs').promises;
+const { Likes } = require('../models');
+
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -88,8 +90,9 @@ router.get('/semua_postingan', protect, async (req, res) => {
   try {
     const allForum = await ForumModel.findAll();
 
-    const forumDenganKomentar = await Promise.all(allForum.map(async (forum) => {
+    const forumDenganKomentarDanLike = await Promise.all(allForum.map(async (forum) => {
       const jumlahKomentar = await commentModel.count({ where: { id_forum: forum.id } });
+      const jumlahLike = await Likes.count({ where:{ id_post: forum.id, liked: true }});
       let images = [];
       if (forum.image) {
         images = forum.image.split(',').map(path => path.replace('images\\', 'images/'));
@@ -104,11 +107,12 @@ router.get('/semua_postingan', protect, async (req, res) => {
         createdAt: forum.createdAt.toISOString(),
         id_user: forum.id_user, // Menambahkan ID pengguna
         name_user: forum.name, // Menambahkan nama pengguna
+        jumlahLike: jumlahLike,
       };
       return forumData;
     }));
 
-    res.json(forumDenganKomentar);
+    res.json(forumDenganKomentarDanLike);
   } catch (error) {
     console.error(error);
     res.status(400).json({
@@ -136,6 +140,13 @@ router.get('/postingan/:id', protect, async (req, res) => {
       where: { id_forum: forumId },
     });
 
+    const likes = await Likes.findAll({
+      where: { id_post: forumId, liked: true },
+      attributes: ['id_user', 'liked_by'], // Ambil ID user dan liked_by dari Likes
+    });
+
+    const totalLikes = likes.length;
+
     const response = {
       forum: {
         id_user: forum.id_user,
@@ -151,6 +162,8 @@ router.get('/postingan/:id', protect, async (req, res) => {
         image: komentar.image,
         createdAt: komentar.createdAt, // Menambahkan informasi createdAt pada komentar
       })),
+      jumlahLike: totalLikes,
+      likes: likes,
     };
 
     res.status(201).json(response);
@@ -162,7 +175,6 @@ router.get('/postingan/:id', protect, async (req, res) => {
     });
   }
 });
-
 
 
 
@@ -192,7 +204,7 @@ router.post('/komentar/:id_forum', protect, async (req, res) => {
 
     return res.status(201).json({
       error: false,
-      message: 'Balasan berhasil ditambahkan',
+      message: 'komentar berhasil ditambahkan',
       Balasan: {
         id_komentar: komentarBaru.id,
         id_user: komentarBaru.id_user,
@@ -307,6 +319,110 @@ router.delete('/hapus_postingan/:id', protect, async (req, res) => {
     res.status(500).json({
       error: true,
       message: 'Terjadi kesalahan saat menghapus forum.',
+      details: error.message,
+    });
+  }
+});
+
+
+// Route to like a forum post
+router.put('/like/:id', protect, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const forumId = req.params.id;
+
+    // Check if the user has already liked the forum
+    const existingLike = await Likes.findOne({
+      where: {
+        id_post: forumId,
+        id_user: loggedInUser.id,
+        liked: true,
+      },
+    });
+
+    if (existingLike) {
+      return res.status(400).json({
+        error: true,
+        message: 'Anda sudah menyukai postingan ini sebelumnya.',
+      });
+    }
+
+    // Create a new like
+    const forum = await ForumModel.findByPk(forumId);
+
+    if (!forum) {
+      return res.status(404).json({
+        error: true,
+        message: 'Maaf, postingan tidak ditemukan.',
+      });
+    }
+
+    const like = await Likes.create({
+      id_user: loggedInUser.id,
+      id_post: forumId,
+      id_target: forum.id_user, // ID dari orang yang menerima like
+      liked: true,
+      liked_by: loggedInUser.fullName || 'Default Name', // Simpan nama pengguna yang melakukan like
+    });
+
+    return res.status(200).json({
+      error: false,
+      message: 'Anda telah menyukai postingan ini.',
+      like,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: 'Terjadi kesalahan saat menambahkan like.',
+      details: error.message,
+    });
+  }
+});
+
+// Route to unlike a forum post
+router.put('/unlike/:id', protect, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const forumId = req.params.id;
+     
+    const forum = await ForumModel.findByPk(forumId);
+
+    if (!forum) {
+      return res.status(404).json({
+        error: true,
+        message: 'Maaf, postingan tidak ditemukan.',
+      });
+    }
+
+    // Find the like by the logged-in user for the specific post
+    const like = await Likes.findOne({
+      where: {
+        id_post: forumId,
+        id_user: loggedInUser.id,
+        liked: true,
+      },
+    });
+
+    if (!like) {
+      return res.status(400).json({
+        error: true,
+        message: 'Anda belum menyukai postingan ini.',
+      });
+    }
+ 
+    // Update the like to 'unliked'
+    await like.update({ liked: false });
+
+    return res.status(200).json({
+      error: false,
+      message: 'Anda sudah berhasil unlike postingan ini.',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: 'Terjadi kesalahan saat melakukan unlike.',
       details: error.message,
     });
   }

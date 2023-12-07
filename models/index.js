@@ -29,7 +29,8 @@ db.Artikel = require('./artikel.model.js')(sequelize, Sequelize);
 db.Modul = require('./modul.model.js')(sequelize, Sequelize);
 db.ForumModel = require('./forum.model')(sequelize, Sequelize);
 db.commentModel = require('./comment.model')(sequelize, Sequelize);
-
+db.Likes = require('./likes.model')(sequelize, Sequelize);
+ 
 
 
 module.exports = db;
