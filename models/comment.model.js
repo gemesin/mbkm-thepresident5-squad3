@@ -19,12 +19,14 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
-
+    id_parent_comment: { // Tambahkan atribut untuk menyimpan ID komentar yang ingin dibalas
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
     name: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-
     comment: {
       type: Sequelize.TEXT,
       allowNull: true,

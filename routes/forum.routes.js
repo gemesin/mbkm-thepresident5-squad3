@@ -142,10 +142,32 @@ router.get('/postingan/:id', protect, async (req, res) => {
 
     const likes = await Likes.findAll({
       where: { id_post: forumId, liked: true },
-      attributes: ['id_user', 'liked_by'], // Ambil ID user dan liked_by dari Likes
+      attributes: ['id_user', 'liked_by'],
     });
 
     const totalLikes = likes.length;
+
+    const mappedComments = {};
+    komentars.forEach((komentar) => {
+      const idKomentar = komentar.id;
+      if (!mappedComments[idKomentar]) {
+        mappedComments[idKomentar] = {
+          id_komentar: idKomentar,
+          id_user: komentar.id_user,
+          name: komentar.name,
+          komentar: komentar.comment, // Mengubah 'isi' menjadi 'komentar'
+          image: komentar.image,
+          createdAt: komentar.createdAt,
+          id_parent_comment: komentar.id_parent_comment,
+          jumlahKomentar: 0,
+        };
+      }
+      if (komentar.id_parent_comment && mappedComments[komentar.id_parent_comment]) {
+        mappedComments[komentar.id_parent_comment].jumlahKomentar += 1;
+      }
+    });
+
+    const commentsArray = Object.values(mappedComments);
 
     const response = {
       forum: {
@@ -154,19 +176,13 @@ router.get('/postingan/:id', protect, async (req, res) => {
         captions: forum.captions,
         image: forum.image.split(',').map(path => path.replace('images\\', 'images/')),
       },
-      komentars: komentars.map((komentar, index) => ({
-        id_komentar: komentar.id, // Menambahkan id_komentar sesuai dengan id di database
-        id_user: komentar.id_user,
-        name: komentar.name,
-        isi: komentar.comment,
-        image: komentar.image,
-        createdAt: komentar.createdAt, // Menambahkan informasi createdAt pada komentar
-      })),
+      komentars: commentsArray,
+      jumlahKomentar: commentsArray.length,
       jumlahLike: totalLikes,
       likes: likes,
     };
 
-    res.status(201).json(response);
+    res.status(200).json(response);
   } catch (error) {
     console.error(error);
     res.status(400).json({
@@ -175,6 +191,7 @@ router.get('/postingan/:id', protect, async (req, res) => {
     });
   }
 });
+
 
 
 
@@ -221,6 +238,62 @@ router.post('/komentar/:id_forum', protect, async (req, res) => {
     });
   }
 });
+
+router.post('/komentar/:id_forum/:id_komentar', protect, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const idForum = req.params.id_forum;
+    const idKomentar = req.params.id_komentar; // Menggunakan ID komentar yang ingin dibalas
+    const { komentar } = req.body;
+
+    const forum = await ForumModel.findByPk(idForum);
+
+    if (!forum) {
+      return res.status(404).json({
+        error: true,
+        message: 'Forum tidak ditemukan.',
+      });
+    } 
+
+    const komentarToReply = await commentModel.findByPk(idKomentar); // Temukan komentar yang ingin dibalas
+
+    if (!komentarToReply) {
+      return res.status(404).json({
+        error: true,
+        message: 'Komentar yang ingin dibalas tidak ditemukan.',
+      });
+    }
+
+    const komentarBaru = await commentModel.create({
+      id_user: loggedInUser.id,
+      id_target: komentarToReply.id_user, // Gunakan id pemilik komentar yang ingin dibalas
+      name: loggedInUser.fullName || 'Default Name',
+      id_forum: idForum,
+      id_parent_comment: idKomentar, // Simpan referensi ke komentar yang ingin dibalas
+      comment: komentar,
+    });
+
+    return res.status(201).json({
+      error: false,
+      message: 'Komentar berhasil ditambahkan sebagai balasan',
+      Balasan: {
+        id_komentar: komentarBaru.id,
+        id_user: komentarBaru.id_user,
+        name: komentarBaru.name,
+        komentar: komentarBaru.comment,
+        id_parent_comment: komentarBaru.id_parent_comment, // Sertakan ID komentar yang dijadikan parent
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: true,
+      message: 'Terjadi kesalahan saat menambahkan balasan.',
+      details: error.message,
+    });
+  }
+});
+
 
 
 
