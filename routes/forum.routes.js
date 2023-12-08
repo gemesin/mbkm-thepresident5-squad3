@@ -112,7 +112,11 @@ router.get('/semua_postingan', protect, async (req, res) => {
       return forumData;
     }));
 
-    res.json(forumDenganKomentarDanLike);
+    res.status(200).json({
+      status: 'success',
+      message: 'Semua postingan berhasil diambil',
+      data: forumDenganKomentarDanLike
+    });
   } catch (error) {
     console.error(error);
     res.status(400).json({
