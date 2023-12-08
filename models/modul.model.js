@@ -35,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
     listing_materi: {
       type: DataTypes.JSON,
       allowNull: false
+    },
+    covers: {
+      type: DataTypes.STRING,
+      allowNull: false
     }
   });
 
