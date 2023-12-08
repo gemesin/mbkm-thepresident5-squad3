@@ -15,7 +15,8 @@ router.post("/add_modul", async (req, res) => {
             status: modul.status,
             learning_time: modul.learning_time,
             total_materi: modul.total_materi,
-            listing_materi : modul.listing_materi
+            listing_materi : modul.listing_materi,
+            covers: modul.covers
         });
     
         res.status(201).json({ 
@@ -127,10 +128,10 @@ router.get("/modul/:id", async (req, res) => {
 
 router.post("/update", async (req, res) => {
     try {
-        const { id, judul, tanggal, status, learning_time, total_materi, listing_materi, desc } = req.body;
+        const { id, judul, tanggal, status, learning_time, total_materi, listing_materi, desc, covers } = req.body;
 
         // Pastikan semua field yang diperlukan ada
-        if (!id || !judul || !desc || !tanggal || !status || !learning_time || !total_materi || !listing_materi) {
+        if (!id || !judul || !desc || !tanggal || !status || !learning_time || !total_materi || !listing_materi || !covers) {
             return res.status(400).json({
                 message: 'Semua field diperlukan'
             });
@@ -144,7 +145,8 @@ router.post("/update", async (req, res) => {
             status: status,
             learning_time: learning_time,
             total_materi: total_materi,
-            listing_materi: listing_materi
+            listing_materi: listing_materi,
+            covers: covers
         }, {
             where: {
                 id: id
