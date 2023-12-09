@@ -94,7 +94,7 @@ router.get('/semua_postingan', protect, async (req, res) => {
       const jumlahLike = await Likes.count({ where:{ id_post: forum.id, liked: true }});
       let images = [];
       if (forum.image) {
-        images = forum.image.split(',').map(path => path.replace('image\\', 'image/'));
+        images = forum.image.split(',').map(path => path.replace('images\\', 'images/'));
       }
       const forumData = {
         forumId: forum.id,
@@ -111,13 +111,6 @@ router.get('/semua_postingan', protect, async (req, res) => {
       return forumData;
     }));
 
-    // Penanganan khusus jika hanya ada satu gambar dalam respon
-    forumDenganKomentarDanLike.forEach(forumData => {
-      if (forumData.image.length === 1) {
-        forumData.image = forumData.image[0]; // Mengubah menjadi string tunggal jika hanya ada satu gambar
-      }
-    });
-
     res.status(200).json({
       status: 'success',
       message: 'Semua postingan berhasil diambil',
@@ -130,10 +123,7 @@ router.get('/semua_postingan', protect, async (req, res) => {
       message: 'Terjadi kesalahan saat mengambil data forum.'
     });
   }
-});
-
-
-   
+});   
 
 router.get('/postingan/:id', protect, async (req, res) => {
   try {
