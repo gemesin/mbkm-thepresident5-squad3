@@ -5,7 +5,7 @@ const transporter = nodemailer.createTransport(emailConfig);
 
 async function sendEmail(email, subject, text) {
   const mailOptions = {
-    from: 'your-email@gmail.com',
+    from: emailConfig.auth.user,
     to: email,
     subject,
     text,
