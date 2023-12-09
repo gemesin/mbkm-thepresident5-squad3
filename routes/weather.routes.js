@@ -90,7 +90,7 @@ function calculateDewPoint(temperature, humidity) {
 }
 
 
-router.get("/weather", async (req, res) => {
+router.get("/", async (req, res) => {
     try {
     const { lat, lon } = req.query;
     const apiKey = '859110c5e10e40ca3fd54dabb1a31914';
