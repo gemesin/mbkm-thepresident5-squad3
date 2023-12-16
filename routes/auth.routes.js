@@ -104,6 +104,9 @@ router.post("/login", loginValidator, async (req, res) => {
 
   return res.status(200).json({
     message: "Success",
+    id: user.id,
+    fullName: user.fullName, 
+    email: user.email,
     data: {
       token: token,
     },
